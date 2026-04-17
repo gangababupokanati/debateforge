@@ -376,7 +376,7 @@ body.light .orb-ring{border-color:rgba(37,99,235,.2)}
     <div class="er" id="loginErr"></div>
     <div class="fd"><label>Email</label><input id="lE" type="email" placeholder="you@email.com"></div>
     <div class="fd"><label>Password</label><input id="lP" type="password" placeholder="Enter password"></div>
-    <div style="text-align:right;margin-bottom:14px"><a href="#" onclick="alert('Password reset link sent to your email!');return false" style="color:#60a5fa;font-size:.8rem;text-decoration:none">Forgot Password?</a></div>
+    <div style="text-align:right;margin-bottom:14px"><a href="#" onclick="go('forgot');return false" style="color:#60a5fa;font-size:.8rem;text-decoration:none">Forgot Password?</a></div>
     <button class="bt ba" onclick="doLogin()">Login &#8594;</button>
     <p style="text-align:center;margin-top:16px;font-size:.85rem;color:#475569">Don&#39;t have an account? <a href="#" onclick="go('register');return false" style="color:#3b82f6;text-decoration:none;font-weight:600">Sign Up</a></p>
   </div>
@@ -427,6 +427,33 @@ body.light .orb-ring{border-color:rgba(37,99,235,.2)}
     </div>
     <button class="bt ba" onclick="doRegister()">Create Account &#8594;</button>
     <p style="text-align:center;margin-top:14px;font-size:.85rem;color:#475569">Already have an account? <a href="#" onclick="go('login');return false" style="color:#3b82f6;text-decoration:none;font-weight:600">Login</a></p>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD PAGE -->
+<div class="pg" id="pg-forgot" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 20%,rgba(59,130,246,.06),transparent 50%),#04070d">
+  <div class="lb" style="max-width:440px">
+    <div style="text-align:left;margin-bottom:16px"><button onclick="go('login')" style="background:none;border:none;color:#60a5fa;font-size:.85rem;cursor:pointer;font-family:Outfit,sans-serif">&#8592; Back to Login</button></div>
+    <h1 style="font-size:1.4rem">Reset Password</h1>
+    <p class="su">Answer your security question to reset</p>
+    <div class="er" id="forgotErr"></div>
+    <div style="display:none;padding:8px 12px;border-radius:8px;background:rgba(34,197,94,.1);color:#22c55e;font-size:.85rem;margin-bottom:10px" id="forgotOk"></div>
+    <div class="fd" id="forgotStep1">
+      <label>Email</label>
+      <input id="fEmail" type="email" placeholder="Enter your registered email">
+      <button class="bt ba" onclick="getSecurityQ()" style="margin-top:12px">Next &#8594;</button>
+    </div>
+    <div id="forgotStep2" style="display:none">
+      <div class="fd" style="margin-bottom:12px">
+        <label>Security Question</label>
+        <div id="fQuestion" style="padding:10px 14px;background:#131a2c;border:1px solid #1e293b;border-radius:9px;color:#60a5fa;font-size:.9rem"></div>
+      </div>
+      <div class="fd" style="margin-bottom:12px"><label>Your Answer</label><input id="fAnswer" placeholder="Type your answer"></div>
+      <div class="fd" style="margin-bottom:12px"><label>New Password</label><input id="fNewPw" type="password" placeholder="Enter new password"></div>
+      <div class="fd" style="margin-bottom:12px"><label>Confirm New Password</label><input id="fConfPw" type="password" placeholder="Confirm new password"></div>
+      <button class="bt ba" onclick="resetPassword()">Reset Password &#8594;</button>
+    </div>
+    <p style="text-align:center;margin-top:16px;font-size:.85rem;color:#475569">Remember your password? <a href="#" onclick="go('login');return false" style="color:#3b82f6;text-decoration:none;font-weight:600">Login</a></p>
   </div>
 </div>
 
@@ -854,7 +881,10 @@ if(!ia){showRegErr('Please select your interest area.');return}
 if(!sl){showRegErr('Please select your skill level.');return}
 if(!tc){showRegErr('You must agree to the Terms & Conditions.');return}
 try{
-var res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fn+' '+ln,email:email,password:pw,interest:ia,skillLevel:sl})});
+var sq=document.getElementById('rSQ').value;
+var sa=document.getElementById('rSA').value.trim();
+if(!sq||!sa){showRegErr('Security question and answer are required.');return}
+var res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fn+' '+ln,email:email,password:pw,interest:ia,skillLevel:sl,securityQuestion:sq,securityAnswer:sa})});
 var data=await res.json();
 if(!res.ok){showRegErr(data.error||'Something went wrong.');return}
 S.token=data.token;S.user={name:data.name,email:data.email};
@@ -869,6 +899,40 @@ function logout(){S.user=null;S.token=null;localStorage.removeItem('df_token');l
 
 
 
+// Forgot Password Functions
+async function getSecurityQ(){
+  var email=document.getElementById('fEmail').value.trim();
+  var errEl=document.getElementById('forgotErr');
+  errEl.style.display='none';
+  if(!email){errEl.textContent='Please enter your email.';errEl.style.display='block';return}
+  try{
+    var res=await fetch('/api/get-security-question',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
+    var data=await res.json();
+    if(!res.ok){errEl.textContent=data.error;errEl.style.display='block';return}
+    document.getElementById('fQuestion').textContent=data.question;
+    document.getElementById('forgotStep1').style.display='none';
+    document.getElementById('forgotStep2').style.display='block';
+  }catch(e){errEl.textContent='Network error.';errEl.style.display='block'}
+}
+async function resetPassword(){
+  var email=document.getElementById('fEmail').value.trim();
+  var answer=document.getElementById('fAnswer').value.trim();
+  var newPw=document.getElementById('fNewPw').value.trim();
+  var confPw=document.getElementById('fConfPw').value.trim();
+  var errEl=document.getElementById('forgotErr');
+  var okEl=document.getElementById('forgotOk');
+  errEl.style.display='none';okEl.style.display='none';
+  if(!answer){errEl.textContent='Please enter your security answer.';errEl.style.display='block';return}
+  if(!newPw||newPw.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return}
+  if(newPw!==confPw){errEl.textContent='Passwords do not match.';errEl.style.display='block';return}
+  try{
+    var res=await fetch('/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,securityAnswer:answer,newPassword:newPw})});
+    var data=await res.json();
+    if(!res.ok){errEl.textContent=data.error;errEl.style.display='block';return}
+    okEl.textContent='Password reset successful! Redirecting to login...';okEl.style.display='block';
+    setTimeout(function(){go('login')},2000);
+  }catch(e){errEl.textContent='Network error.';errEl.style.display='block'}
+}
 function pk(el,k){el.parentElement.querySelectorAll('.oc').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');S[k]=el.dataset.v;if(k==='topic'&&el.dataset.v!=='custom'){S.customTopic='';document.getElementById('customTopicTag').innerHTML=''}}
 function cap(s){return s[0].toUpperCase()+s.slice(1)}
 

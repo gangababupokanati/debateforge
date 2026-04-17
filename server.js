@@ -92,7 +92,9 @@ app.post('/api/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = new User({ name, email, password: hashedPassword });
+    const securityQuestion = req.body.securityQuestion || '';
+    const securityAnswer = req.body.securityAnswer ? req.body.securityAnswer.toLowerCase().trim() : '';
+    const user = new User({ name, email, password: hashedPassword, securityQuestion, securityAnswer });
     await user.save();
 
     // Create token
