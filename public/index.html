@@ -990,7 +990,7 @@ function autoStartMic(){
 function showDebateOverlay(){
   var bg=document.getElementById('debateBg');if(bg)bg.style.display='block';
   var ind=document.getElementById('debateIndicator');if(ind)ind.style.display='flex';
-  var st=document.getElementById('debateAiStatus');if(st){st.style.display='block';st.textContent='AI is preparing...';}
+  var st=document.getElementById('debateAiStatus');if(st){st.style.display='block';st.textContent='';}
   var btn=document.getElementById('debateSubmitBtn');if(btn)btn.style.display='block';
 }
 function startDebate(){S.msgs=[];S.turn=0;S.sec=0;S.active=true;document.getElementById('tL').innerHTML='';var om=OM[S.opponent],av=getAv();var topicLabel=S.customTopic||S.subTopic||cap(S.topic);document.getElementById('bT').textContent=(TE[S.topic]||'\uD83C\uDFAF')+' '+topicLabel;document.getElementById('bD').textContent=DE[S.difficulty]+' '+cap(S.difficulty);document.getElementById('bO').textContent=om.e+' '+om.n.split(' ')[1];document.getElementById('oN').textContent=om.n;document.getElementById('oS').textContent='Preparing\u2026';document.getElementById('sB').innerHTML='<div class="tp"><i></i><i></i><i></i></div>';go('debate');startTimer();showDebateOverlay();var bg2=document.getElementById('debateBg');if(bg2)bg2.style.display='block';var ind2=document.getElementById('debateIndicator');if(ind2)ind2.style.display='flex';var st2=document.getElementById('debateAiStatus');if(st2){st2.style.display='block';st2.textContent='';}var btn2=document.getElementById('debateSubmitBtn');if(btn2)btn2.style.display='block';getAIResponse([{role:'user',text:'Start the debate. Give your opening argument in 2-3 sentences.'}],true)}
