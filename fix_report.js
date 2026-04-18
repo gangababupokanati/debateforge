@@ -1,280 +1,254 @@
-// fix_report.js - Adds security question based password reset
+// fix_report.js - Adds human-like SVG avatar with lip sync
 // Run: node fix_report.js
-// Updates both server.js and public/index.html
 
 const fs = require('fs');
+let html = fs.readFileSync('public/index.html', 'utf8');
 let fixes = 0;
 
-// =====================================================
-// PART 1: UPDATE SERVER.JS
-// =====================================================
-let server = fs.readFileSync('server.js', 'utf8');
+// ============ STEP 1: Add avatar CSS ============
+const avatarCSS = `
+/* HUMAN AI AVATAR */
+.avatar-container{width:200px;height:200px;margin:0 auto 10px;position:relative}
+.avatar-container svg{width:100%;height:100%}
+.avatar-glow{position:absolute;inset:-15px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.2),transparent 70%);opacity:0;transition:.5s;pointer-events:none}
+.avatar-glow.active{opacity:1;animation:glowPulse 2s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+`;
 
-// 1a: Add securityQuestion and securityAnswer to User schema
-const oldSchema = `const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
-});`;
-
-const newSchema = `const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  securityQuestion: { type: String, default: '' },
-  securityAnswer: { type: String, default: '' },
-  createdAt: { type: Date, default: Date.now }
-});`;
-
-if (server.includes(oldSchema)) {
-  server = server.replace(oldSchema, newSchema);
+const cssInsert = `/* NAV */`;
+if (html.includes(cssInsert) && !html.includes('.avatar-container{')) {
+  html = html.replace(cssInsert, avatarCSS + cssInsert);
   fixes++;
-  console.log('✅ Server FIX 1: Added securityQuestion fields to User schema');
-} else {
-  console.log('⏭️  Server FIX 1: Schema already updated or not found');
+  console.log('✅ FIX 1: Added avatar CSS');
 }
 
-// 1b: Update register route to save security question
-const oldRegister = `const user = new User({ name, email, password: hashedPassword });`;
-const newRegister = `const securityQuestion = req.body.securityQuestion || '';
-    const securityAnswer = req.body.securityAnswer ? req.body.securityAnswer.toLowerCase().trim() : '';
-    const user = new User({ name, email, password: hashedPassword, securityQuestion, securityAnswer });`;
+// ============ STEP 2: Replace orb with human SVG avatar ============
+const humanAvatar = `<div class="avatar-container" id="avatarContainer">
+        <div class="avatar-glow" id="avatarGlow"></div>
+        <svg viewBox="0 0 200 200" id="avatarSvg">
+          <circle cx="100" cy="90" r="70" fill="#F5D6C3" stroke="#E8C4AB" stroke-width="1"/>
+          <ellipse cx="100" cy="52" rx="72" ry="40" fill="#1a1a2e"/>
+          <ellipse cx="45" cy="72" rx="18" ry="30" fill="#1a1a2e"/>
+          <ellipse cx="155" cy="72" rx="18" ry="30" fill="#1a1a2e"/>
+          <ellipse cx="32" cy="95" rx="8" ry="12" fill="#F0C9B0"/>
+          <ellipse cx="168" cy="95" rx="8" ry="12" fill="#F0C9B0"/>
+          <ellipse cx="75" cy="92" rx="16" ry="12" fill="#fff" stroke="#ddd" stroke-width="0.5"/>
+          <ellipse cx="125" cy="92" rx="16" ry="12" fill="#fff" stroke="#ddd" stroke-width="0.5"/>
+          <circle cx="75" cy="93" r="7" fill="#4A6FA5" id="irisL"/>
+          <circle cx="125" cy="93" r="7" fill="#4A6FA5" id="irisR"/>
+          <circle cx="75" cy="93" r="3.5" fill="#1a1a2e" id="pupilL"/>
+          <circle cx="125" cy="93" r="3.5" fill="#1a1a2e" id="pupilR"/>
+          <circle cx="78" cy="90" r="2" fill="#fff" opacity="0.8"/>
+          <circle cx="128" cy="90" r="2" fill="#fff" opacity="0.8"/>
+          <ellipse cx="75" cy="92" rx="16" ry="0" fill="#F5D6C3" id="eyelidL"/>
+          <ellipse cx="125" cy="92" rx="16" ry="0" fill="#F5D6C3" id="eyelidR"/>
+          <path d="M58 78 Q75 72 92 78" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round" id="browL"/>
+          <path d="M108 78 Q125 72 142 78" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round" id="browR"/>
+          <path d="M95 100 Q100 112 105 100" fill="none" stroke="#E0B49A" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M80 125 Q100 132 120 125" fill="none" stroke="#C4756A" stroke-width="2.5" stroke-linecap="round" id="mouthLine"/>
+          <ellipse cx="100" cy="128" rx="15" ry="0" fill="#C4756A" id="mouthOpen" opacity="0"/>
+          <ellipse cx="55" cy="112" rx="12" ry="6" fill="#F0A0A0" opacity="0" id="cheekL"/>
+          <ellipse cx="145" cy="112" rx="12" ry="6" fill="#F0A0A0" opacity="0" id="cheekR"/>
+          <rect x="85" y="155" width="30" height="20" rx="5" fill="#F0C9B0"/>
+          <path d="M50 175 Q100 165 150 175 L160 200 L40 200 Z" fill="#3B82F6"/>
+          <path d="M85 175 L100 185 L115 175" fill="none" stroke="#2563EB" stroke-width="1.5"/>
+        </svg>
+      </div>`;
 
-if (server.includes(oldRegister)) {
-  server = server.replace(oldRegister, newRegister);
-  fixes++;
-  console.log('✅ Server FIX 2: Updated register route to save security question');
-} else {
-  console.log('⏭️  Server FIX 2: Register route already updated or not found');
-}
+// Try multiple possible existing avatar/orb patterns
+const patterns = [
+  // Pattern 1: CSS avatar from previous fix
+  /<div class="ai-face-wrap"[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/,
+  // Pattern 2: Hidden orb
+  /<div class="orb-wrap" id="bavW" style="display:none">[\s\S]*?<\/div>\s*<div class="ai-face-wrap/,
+];
 
-// 1c: Add forgot password route before "// START SERVER" section
-const forgotRoute = `
-// ═══════════════════════════════════════
-// FORGOT PASSWORD ROUTE
-// ═══════════════════════════════════════
+// Simple string replacements
+const orbStr1 = `<div class="orb-wrap" id="bavW" style="display:none">
+        <div class="orb-dots"></div>
+        <div class="orb-ring2"></div>
+        <div class="orb-ring"></div>
+        <div class="orb"></div>
+      </div>`;
 
-app.post('/api/forgot-password', async (req, res) => {
-  try {
-    const { email, securityAnswer, newPassword } = req.body;
-    if (!email || !securityAnswer || !newPassword) {
-      return res.status(400).json({ error: 'All fields are required.' });
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'No account found with this email.' });
-    }
-    if (!user.securityAnswer) {
-      return res.status(400).json({ error: 'No security question set for this account. Please contact support.' });
-    }
-    if (user.securityAnswer.toLowerCase().trim() !== securityAnswer.toLowerCase().trim()) {
-      return res.status(400).json({ error: 'Security answer is incorrect.' });
-    }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
-    }
-    user.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
-    res.json({ success: true, message: 'Password reset successful! You can now login.' });
-  } catch (err) {
-    console.error('Forgot password error:', err.message);
-    res.status(500).json({ error: 'Something went wrong. Please try again.' });
+const orbStr2 = `<div class="orb-wrap" id="bavW">
+        <div class="orb-dots"></div>
+        <div class="orb-ring2"></div>
+        <div class="orb-ring"></div>
+        <div class="orb"></div>
+      </div>`;
+
+if (html.includes('ai-face-wrap')) {
+  // Remove old CSS avatar entirely and find the orb
+  html = html.replace(/<div class="ai-face-wrap"[\s\S]*?<div class="ai-mouth"[^>]*><\/div>\s*<\/div>\s*<\/div>/, '');
+  // Also remove hidden orb if present
+  if (html.includes(orbStr1)) {
+    html = html.replace(orbStr1, humanAvatar);
+  } else {
+    // Insert avatar before sound wave
+    html = html.replace('<div class="sw"', humanAvatar + '\n      <div class="sw"');
   }
-});
-
-app.post('/api/get-security-question', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required.' });
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: 'No account found with this email.' });
-    }
-    if (!user.securityQuestion) {
-      return res.status(400).json({ error: 'No security question set for this account.' });
-    }
-    res.json({ question: user.securityQuestion });
-  } catch (err) {
-    console.error('Get security question error:', err.message);
-    res.status(500).json({ error: 'Something went wrong.' });
+  fixes++;
+  console.log('✅ FIX 2: Replaced old avatar with human SVG');
+} else if (html.includes(orbStr2)) {
+  html = html.replace(orbStr2, humanAvatar);
+  fixes++;
+  console.log('✅ FIX 2: Replaced orb with human SVG avatar');
+} else if (html.includes(orbStr1)) {
+  html = html.replace(orbStr1, humanAvatar);
+  fixes++;
+  console.log('✅ FIX 2: Replaced hidden orb with human SVG avatar');
+} else {
+  // Last resort - insert before sound wave
+  if (html.includes('<div class="sw"') && !html.includes('avatarContainer')) {
+    html = html.replace('<div class="sw"', humanAvatar + '\n      <div class="sw"');
+    fixes++;
+    console.log('✅ FIX 2: Inserted human SVG avatar before sound wave');
+  } else {
+    console.log('⏭️  FIX 2: Could not find insertion point');
   }
-});
+}
 
-`;
+// ============ STEP 3: Add avatar animation JavaScript ============
+const avatarJS = `<script>
+(function(){
+  var blinkTimer=null,pupilTimer=null,mouthTimer=null;
+  function blink(){
+    var lL=document.getElementById('eyelidL'),lR=document.getElementById('eyelidR');
+    if(!lL||!lR)return;
+    lL.setAttribute('ry','12');lR.setAttribute('ry','12');
+    setTimeout(function(){lL.setAttribute('ry','0');lR.setAttribute('ry','0');},120);
+  }
+  function startBlinking(){
+    if(blinkTimer)clearInterval(blinkTimer);
+    blinkTimer=setInterval(function(){blink();if(Math.random()>0.7)setTimeout(blink,250);},2000+Math.random()*3000);
+  }
+  function movePupils(){
+    if(pupilTimer)clearInterval(pupilTimer);
+    pupilTimer=setInterval(function(){
+      var ox=(Math.random()-0.5)*4,oy=(Math.random()-0.5)*2;
+      var pL=document.getElementById('pupilL'),pR=document.getElementById('pupilR');
+      var iL=document.getElementById('irisL'),iR=document.getElementById('irisR');
+      if(!pL||!pR||!iL||!iR)return;
+      pL.setAttribute('cx',75+ox);pL.setAttribute('cy',93+oy);
+      pR.setAttribute('cx',125+ox);pR.setAttribute('cy',93+oy);
+      iL.setAttribute('cx',75+ox);iR.setAttribute('cx',125+ox);
+      iL.setAttribute('cy',93+oy);iR.setAttribute('cy',93+oy);
+    },1500+Math.random()*2000);
+  }
+  function startSpeaking(){
+    var mLine=document.getElementById('mouthLine'),mOpen=document.getElementById('mouthOpen');
+    var cL=document.getElementById('cheekL'),cR=document.getElementById('cheekR');
+    var glow=document.getElementById('avatarGlow');
+    if(!mLine||!mOpen)return;
+    mLine.setAttribute('opacity','0');mOpen.setAttribute('opacity','1');
+    if(cL)cL.setAttribute('opacity','0.3');if(cR)cR.setAttribute('opacity','0.3');
+    if(glow)glow.classList.add('active');
+    if(mouthTimer)clearInterval(mouthTimer);
+    mouthTimer=setInterval(function(){
+      var ry=3+Math.random()*10,rx=12+Math.random()*6;
+      mOpen.setAttribute('ry',ry);mOpen.setAttribute('rx',rx);
+    },120);
+  }
+  function stopSpeaking(){
+    var mLine=document.getElementById('mouthLine'),mOpen=document.getElementById('mouthOpen');
+    var cL=document.getElementById('cheekL'),cR=document.getElementById('cheekR');
+    var glow=document.getElementById('avatarGlow');
+    if(mouthTimer){clearInterval(mouthTimer);mouthTimer=null;}
+    if(!mLine||!mOpen)return;
+    mLine.setAttribute('opacity','1');mOpen.setAttribute('opacity','0');mOpen.setAttribute('ry','0');
+    if(cL)cL.setAttribute('opacity','0');if(cR)cR.setAttribute('opacity','0');
+    if(glow)glow.classList.remove('active');
+  }
+  function setThinking(){
+    stopSpeaking();
+    var bL=document.getElementById('browL'),bR=document.getElementById('browR');
+    var mLine=document.getElementById('mouthLine'),mOpen=document.getElementById('mouthOpen');
+    if(bL)bL.setAttribute('d','M58 74 Q75 68 92 76');
+    if(bR)bR.setAttribute('d','M108 76 Q125 68 142 74');
+    if(mLine)mLine.setAttribute('opacity','0');
+    if(mOpen){mOpen.setAttribute('opacity','1');mOpen.setAttribute('ry','5');mOpen.setAttribute('rx','8');}
+  }
+  function setSmile(){
+    stopSpeaking();
+    var bL=document.getElementById('browL'),bR=document.getElementById('browR'),mLine=document.getElementById('mouthLine');
+    if(bL)bL.setAttribute('d','M58 78 Q75 72 92 78');
+    if(bR)bR.setAttribute('d','M108 78 Q125 72 142 78');
+    if(mLine){mLine.setAttribute('opacity','1');mLine.setAttribute('d','M80 122 Q100 138 120 122');}
+  }
+  function setNeutral(){
+    stopSpeaking();
+    var bL=document.getElementById('browL'),bR=document.getElementById('browR'),mLine=document.getElementById('mouthLine');
+    if(bL)bL.setAttribute('d','M58 78 Q75 72 92 78');
+    if(bR)bR.setAttribute('d','M108 78 Q125 72 142 78');
+    if(mLine){mLine.setAttribute('opacity','1');mLine.setAttribute('d','M80 125 Q100 132 120 125');}
+  }
+  startBlinking();movePupils();
+  var _origSpeak=window.speak;
+  window.speak=function(text,onEnd){
+    startSpeaking();
+    var st=document.getElementById('debateAiStatus');if(st){st.style.display='block';st.textContent='AI is speaking...';}
+    var sw=document.getElementById('sW');if(sw)sw.classList.add('ac');
+    var os=document.getElementById('oS');if(os){os.textContent='Speaking...';os.classList.add('spks');}
+    _origSpeak(text,function(){
+      stopSpeaking();setSmile();
+      if(sw)sw.classList.remove('ac');if(os){os.textContent='Listening...';os.classList.remove('spks');}
+      var st2=document.getElementById('debateAiStatus');if(st2){st2.style.display='block';st2.textContent='Your Turn - Speak Now';}
+      if(onEnd)onEnd();
+    });
+  };
+  var _origGetAI=window.getAIResponse;
+  if(_origGetAI){window.getAIResponse=function(msgs,isOpening){setThinking();var st=document.getElementById('debateAiStatus');if(st){st.style.display='block';st.textContent='AI is thinking...';}return _origGetAI(msgs,isOpening);};}
+  window.avatarSpeak=startSpeaking;window.avatarStop=stopSpeaking;window.avatarThink=setThinking;window.avatarSmile=setSmile;window.avatarNeutral=setNeutral;
+})();
+</script>`;
 
-const insertBeforeServer = `// ═══════════════════════════════════════
-// START SERVER
-// ═══════════════════════════════════════`;
+// Remove old avatar JS if present
+if (html.includes('AI AVATAR ANIMATION')) {
+  html = html.replace(/<script>\s*\/\/ ========== AI AVATAR ANIMATION ==========[\s\S]*?<\/script>/, '');
+  console.log('   Removed old avatar JS');
+}
 
-if (!server.includes('/api/forgot-password') && server.includes(insertBeforeServer)) {
-  server = server.replace(insertBeforeServer, forgotRoute + insertBeforeServer);
+const jsInsert = `</body>`;
+if (html.includes(jsInsert) && !html.includes('HUMAN AVATAR ANIMATION') && !html.includes('startBlinking();movePupils()')) {
+  html = html.replace(jsInsert, avatarJS + '\n' + jsInsert);
   fixes++;
-  console.log('✅ Server FIX 3: Added forgot-password and get-security-question routes');
-} else {
-  console.log('⏭️  Server FIX 3: Routes already exist or insert point not found');
+  console.log('✅ FIX 3: Added human avatar animation JS');
 }
 
-fs.writeFileSync('server.js', server, 'utf8');
-console.log('   server.js updated!\n');
-
-// =====================================================
-// PART 2: UPDATE PUBLIC/INDEX.HTML
-// =====================================================
-let html = fs.readFileSync('public/index.html', 'utf8');
-
-// 2a: Add security question field to registration form
-const oldRegFields = `<div style="margin-bottom:14px;display:flex;align-items:flex-start;gap:8px">
-      <input type="checkbox" id="rTC"`;
-
-const newRegFields = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fd" style="margin-bottom:10px"><label>Security Question</label>
-        <select id="rSQ" style="width:100%;padding:10px 14px;background:#131a2c;border:1px solid #1e293b;border-radius:9px;color:#f1f5f9;font-size:.9rem;font-family:Outfit,sans-serif">
-          <option value="">Select a question</option>
-          <option value="What is your pet's name?">What is your pet's name?</option>
-          <option value="What city were you born in?">What city were you born in?</option>
-          <option value="What is your favorite movie?">What is your favorite movie?</option>
-          <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
-          <option value="What was your first school name?">What was your first school name?</option>
-        </select>
-      </div>
-      <div class="fd" style="margin-bottom:10px"><label>Security Answer</label><input id="rSA" placeholder="Your answer"></div>
-    </div>
-    <div style="margin-bottom:14px;display:flex;align-items:flex-start;gap:8px">
-      <input type="checkbox" id="rTC"`;
-
-if (html.includes(oldRegFields)) {
-  html = html.replace(oldRegFields, newRegFields);
+// ============ STEP 4: Remove old CSS avatar styles ============
+if (html.includes('/* AI AVATAR FACE */')) {
+  html = html.replace(/\/\* AI AVATAR FACE \*\/[\s\S]*?\.ai-face-status\.listening\{color:#22c55e\}\s*/, '');
   fixes++;
-  console.log('✅ HTML FIX 1: Added security question fields to registration form');
-} else {
-  console.log('⏭️  HTML FIX 1: Registration form already updated or not found');
+  console.log('✅ FIX 4: Removed old CSS avatar styles');
 }
 
-// 2b: Update doRegister to send security question
-const oldDoRegister = `var res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fn+' '+ln,email:email,password:pw,interest:ia,skillLevel:sl})});`;
-
-const newDoRegister = `var sq=document.getElementById('rSQ').value;
-var sa=document.getElementById('rSA').value.trim();
-if(!sq||!sa){showRegErr('Security question and answer are required.');return}
-var res=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fn+' '+ln,email:email,password:pw,interest:ia,skillLevel:sl,securityQuestion:sq,securityAnswer:sa})});`;
-
-if (html.includes(oldDoRegister)) {
-  html = html.replace(oldDoRegister, newDoRegister);
+// ============ STEP 5: Make avs visible ============
+if (html.includes('<div class="avs" style="display:none">')) {
+  html = html.replace('<div class="avs" style="display:none">', '<div class="avs" style="display:flex;z-index:10;position:relative">');
   fixes++;
-  console.log('✅ HTML FIX 2: Updated doRegister to send security question');
-} else {
-  console.log('⏭️  HTML FIX 2: doRegister already updated or not found');
+  console.log('✅ FIX 5: Made avatar section visible');
 }
 
-// 2c: Replace "Forgot Password?" link with proper page navigation
-const oldForgot = `<a href="#" onclick="alert('Password reset link sent to your email!');return false" style="color:#60a5fa;font-size:.8rem;text-decoration:none">Forgot Password?</a>`;
-
-const newForgot = `<a href="#" onclick="go('forgot');return false" style="color:#60a5fa;font-size:.8rem;text-decoration:none">Forgot Password?</a>`;
-
-if (html.includes(oldForgot)) {
-  html = html.replace(oldForgot, newForgot);
+// ============ STEP 6: Dim particle background ============
+const debateBgOld = '<div class="debate-bg" id="debateBg" style="display:none">';
+const debateBgDim = '<div class="debate-bg" id="debateBg" style="display:none;opacity:0.3">';
+if (html.includes(debateBgOld) && !html.includes('opacity:0.3')) {
+  html = html.replace(debateBgOld, debateBgDim);
   fixes++;
-  console.log('✅ HTML FIX 3: Updated Forgot Password link');
-} else {
-  console.log('⏭️  HTML FIX 3: Forgot Password link already updated or not found');
-}
-
-// 2d: Add Forgot Password page HTML before <!-- HOME -->
-const forgotPage = `<!-- FORGOT PASSWORD PAGE -->
-<div class="pg" id="pg-forgot" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 20%,rgba(59,130,246,.06),transparent 50%),#04070d">
-  <div class="lb" style="max-width:440px">
-    <div style="text-align:left;margin-bottom:16px"><button onclick="go('login')" style="background:none;border:none;color:#60a5fa;font-size:.85rem;cursor:pointer;font-family:Outfit,sans-serif">&#8592; Back to Login</button></div>
-    <h1 style="font-size:1.4rem">Reset Password</h1>
-    <p class="su">Answer your security question to reset</p>
-    <div class="er" id="forgotErr"></div>
-    <div style="display:none;padding:8px 12px;border-radius:8px;background:rgba(34,197,94,.1);color:#22c55e;font-size:.85rem;margin-bottom:10px" id="forgotOk"></div>
-    <div class="fd" id="forgotStep1">
-      <label>Email</label>
-      <input id="fEmail" type="email" placeholder="Enter your registered email">
-      <button class="bt ba" onclick="getSecurityQ()" style="margin-top:12px">Next &#8594;</button>
-    </div>
-    <div id="forgotStep2" style="display:none">
-      <div class="fd" style="margin-bottom:12px">
-        <label>Security Question</label>
-        <div id="fQuestion" style="padding:10px 14px;background:#131a2c;border:1px solid #1e293b;border-radius:9px;color:#60a5fa;font-size:.9rem"></div>
-      </div>
-      <div class="fd" style="margin-bottom:12px"><label>Your Answer</label><input id="fAnswer" placeholder="Type your answer"></div>
-      <div class="fd" style="margin-bottom:12px"><label>New Password</label><input id="fNewPw" type="password" placeholder="Enter new password"></div>
-      <div class="fd" style="margin-bottom:12px"><label>Confirm New Password</label><input id="fConfPw" type="password" placeholder="Confirm new password"></div>
-      <button class="bt ba" onclick="resetPassword()">Reset Password &#8594;</button>
-    </div>
-    <p style="text-align:center;margin-top:16px;font-size:.85rem;color:#475569">Remember your password? <a href="#" onclick="go('login');return false" style="color:#3b82f6;text-decoration:none;font-weight:600">Login</a></p>
-  </div>
-</div>
-
-`;
-
-const insertBeforeHome = `<!-- HOME -->`;
-
-if (!html.includes('pg-forgot') && html.includes(insertBeforeHome)) {
-  html = html.replace(insertBeforeHome, forgotPage + insertBeforeHome);
-  fixes++;
-  console.log('✅ HTML FIX 4: Added Forgot Password page');
-} else {
-  console.log('⏭️  HTML FIX 4: Forgot page already exists or insert point not found');
-}
-
-// 2e: Add forgot password JavaScript functions before "function pk("
-const forgotJS = `// Forgot Password Functions
-async function getSecurityQ(){
-  var email=document.getElementById('fEmail').value.trim();
-  var errEl=document.getElementById('forgotErr');
-  errEl.style.display='none';
-  if(!email){errEl.textContent='Please enter your email.';errEl.style.display='block';return}
-  try{
-    var res=await fetch('/api/get-security-question',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
-    var data=await res.json();
-    if(!res.ok){errEl.textContent=data.error;errEl.style.display='block';return}
-    document.getElementById('fQuestion').textContent=data.question;
-    document.getElementById('forgotStep1').style.display='none';
-    document.getElementById('forgotStep2').style.display='block';
-  }catch(e){errEl.textContent='Network error.';errEl.style.display='block'}
-}
-async function resetPassword(){
-  var email=document.getElementById('fEmail').value.trim();
-  var answer=document.getElementById('fAnswer').value.trim();
-  var newPw=document.getElementById('fNewPw').value.trim();
-  var confPw=document.getElementById('fConfPw').value.trim();
-  var errEl=document.getElementById('forgotErr');
-  var okEl=document.getElementById('forgotOk');
-  errEl.style.display='none';okEl.style.display='none';
-  if(!answer){errEl.textContent='Please enter your security answer.';errEl.style.display='block';return}
-  if(!newPw||newPw.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return}
-  if(newPw!==confPw){errEl.textContent='Passwords do not match.';errEl.style.display='block';return}
-  try{
-    var res=await fetch('/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,securityAnswer:answer,newPassword:newPw})});
-    var data=await res.json();
-    if(!res.ok){errEl.textContent=data.error;errEl.style.display='block';return}
-    okEl.textContent='Password reset successful! Redirecting to login...';okEl.style.display='block';
-    setTimeout(function(){go('login')},2000);
-  }catch(e){errEl.textContent='Network error.';errEl.style.display='block'}
-}
-`;
-
-const insertBeforePk = `function pk(el,k)`;
-
-if (!html.includes('function getSecurityQ') && html.includes(insertBeforePk)) {
-  html = html.replace(insertBeforePk, forgotJS + insertBeforePk);
-  fixes++;
-  console.log('✅ HTML FIX 5: Added forgot password JavaScript functions');
-} else {
-  console.log('⏭️  HTML FIX 5: Forgot password JS already exists or insert point not found');
+  console.log('✅ FIX 6: Dimmed particle background');
 }
 
 fs.writeFileSync('public/index.html', html, 'utf8');
-console.log('   public/index.html updated!\n');
-
-console.log('🎉 Done! ' + fixes + ' fixes applied.');
-console.log('\nNext steps:');
-console.log('1. Run: node server.js');
-console.log('2. Test: Register a NEW account (with security question)');
-console.log('3. Test: Click Forgot Password and reset it');
-console.log('4. Push: git add . && git commit -m "Add forgot password" && git push origin main');
+console.log('\n🎉 Done! ' + fixes + ' fixes applied.');
+console.log('\n👤 Human avatar features:');
+console.log('   - Realistic face with skin, hair, blue eyes');
+console.log('   - Natural eye blinking (every 2-5s)');
+console.log('   - Pupils move randomly');
+console.log('   - Mouth animates when AI speaks (lip sync)');
+console.log('   - Thinking face when AI processes');
+console.log('   - Smile when listening to you');
+console.log('   - Blue glow when speaking');
+console.log('   - Cheek blush effect');
+console.log('   - Blue shirt/collar');
+console.log('\nRun: node server.js');
