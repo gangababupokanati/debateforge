@@ -45,6 +45,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  securityQuestion: { type: String, default: '' },
+  securityAnswer: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', userSchema);
@@ -328,6 +330,42 @@ app.post('/api/save-debate', async (req, res) => {
 // START SERVER
 // ═══════════════════════════════════════
 
+// FORGOT PASSWORD ROUTE
+app.post('/api/forgot-password', async (req, res) => {
+  try {
+    const { email, securityAnswer, newPassword } = req.body;
+    if (!email || !securityAnswer || !newPassword) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'No account found with this email.' });
+    if (!user.securityAnswer) return res.status(400).json({ error: 'No security question set for this account.' });
+    if (user.securityAnswer.toLowerCase().trim() !== securityAnswer.toLowerCase().trim()) {
+      return res.status(400).json({ error: 'Security answer is incorrect.' });
+    }
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ success: true, message: 'Password reset successful!' });
+  } catch (err) {
+    console.error('Forgot password error:', err.message);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
+
+app.post('/api/get-security-question', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'No account found with this email.' });
+    if (!user.securityQuestion) return res.status(400).json({ error: 'No security question set for this account.' });
+    res.json({ question: user.securityQuestion });
+  } catch (err) {
+    console.error('Get security question error:', err.message);
+    res.status(500).json({ error: 'Something went wrong.' });
+  }
+});
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('MongoDB connected!');
