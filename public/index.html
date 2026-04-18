@@ -421,6 +421,19 @@ body.light .orb-ring{border-color:rgba(37,99,235,.2)}
         </select>
       </div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fd" style="margin-bottom:10px"><label>Security Question</label>
+        <select id="rSQ" style="width:100%;padding:10px 14px;background:#131a2c;border:1px solid #1e293b;border-radius:9px;color:#f1f5f9;font-size:.9rem;font-family:Outfit,sans-serif">
+          <option value="">Select a question</option>
+          <option value="What is your pet's name?">What is your pet's name?</option>
+          <option value="What city were you born in?">What city were you born in?</option>
+          <option value="What is your favorite movie?">What is your favorite movie?</option>
+          <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+          <option value="What was your first school name?">What was your first school name?</option>
+        </select>
+      </div>
+      <div class="fd" style="margin-bottom:10px"><label>Security Answer</label><input id="rSA" placeholder="Your answer"></div>
+    </div>
     <div style="margin-bottom:14px;display:flex;align-items:flex-start;gap:8px">
       <input type="checkbox" id="rTC" style="margin-top:3px;accent-color:#3b82f6;width:16px;height:16px;cursor:pointer">
       <label for="rTC" style="font-size:.82rem;color:#94a3b8;cursor:pointer">I agree to the <a href="#" onclick="alert('Terms: Use DebateForge responsibly. Respect all users. AI responses are for practice only.');return false" style="color:#3b82f6;text-decoration:none">Terms & Conditions</a> and <a href="#" onclick="alert('Privacy: Your data is stored securely. We never share your information with third parties.');return false" style="color:#3b82f6;text-decoration:none">Privacy Policy</a></label>
