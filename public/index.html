@@ -34,7 +34,7 @@ button{cursor:pointer;font-family:inherit}
 .nt{background:none;border:none;color:var(--t3);font-size:.82rem;font-weight:600;padding:6px 14px;border-radius:8px;transition:.2s}
 .nt:hover{color:var(--t2);background:var(--rs)}
 .nt.on{color:var(--t1);background:var(--ov)}
-.ne{position:relative}
+.ne{position:relative;margin-left:auto}
 .pb{width:34px;height:34px;border-radius:50%;border:2px solid var(--bd);background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;transition:.2s}
 .pb:hover{border-color:var(--ac)}
 .pd{display:none;position:absolute;top:46px;right:0;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:5px;min-width:200px;z-index:300}
@@ -778,7 +778,7 @@ async function generateReport(){
       <div class="dc"><span class="tm" id="tmr">00:00</span><button class="bt br bs" onclick="endDebateToReview()">End Debate</button></div>
     </div>
     <div class="avs">
-      <div class="orb-wrap" id="bavW">
+      <div class="orb-wrap" id="bavW" style="display:none">
         <div class="orb-dots"></div>
         <div class="orb-ring2"></div>
         <div class="orb-ring"></div>
