@@ -366,6 +366,75 @@ app.post('/api/get-security-question', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong.' });
   }
 });
+
+// ═══════════════════════════════════════
+// D-ID AVATAR VIDEO ROUTE
+// ═══════════════════════════════════════
+
+app.post('/api/create-talk', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: 'Text is required.' });
+
+    const DID_API_KEY = process.env.DID_API_KEY;
+    if (!DID_API_KEY) return res.status(500).json({ error: 'D-ID API key not configured.' });
+
+    // Step 1: Create talk video
+    const createRes = await fetch('https://api.d-id.com/talks', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + DID_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        source_url: 'https://create-images-results.d-id.com/DefaultPresenters/Noelle_f/image.png',
+        script: {
+          type: 'text',
+          input: text,
+          provider: { type: 'microsoft', voice_id: 'en-US-JennyNeural' }
+        },
+        config: { fluent: true }
+      })
+    });
+
+    const createData = await createRes.json();
+    if (!createData.id) {
+      console.error('D-ID create error:', createData);
+      return res.status(500).json({ error: 'Could not create avatar video.' });
+    }
+
+    const talkId = createData.id;
+
+    // Step 2: Poll for result (max 30 seconds)
+    let videoUrl = null;
+    for (let i = 0; i < 15; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+
+      const pollRes = await fetch('https://api.d-id.com/talks/' + talkId, {
+        headers: { 'Authorization': 'Basic ' + DID_API_KEY }
+      });
+      const pollData = await pollRes.json();
+
+      if (pollData.status === 'done' && pollData.result_url) {
+        videoUrl = pollData.result_url;
+        break;
+      } else if (pollData.status === 'error') {
+        console.error('D-ID error:', pollData);
+        return res.status(500).json({ error: 'Avatar video generation failed.' });
+      }
+    }
+
+    if (!videoUrl) {
+      return res.status(500).json({ error: 'Video generation timed out.' });
+    }
+
+    res.json({ video_url: videoUrl });
+  } catch (err) {
+    console.error('D-ID error:', err.message);
+    res.status(500).json({ error: 'Could not generate avatar video.' });
+  }
+});
+
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('MongoDB connected!');
