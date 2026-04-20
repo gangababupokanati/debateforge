@@ -778,13 +778,17 @@ async function generateReport(){
       <div class="dc"><span class="tm" id="tmr">00:00</span><button class="bt br bs" onclick="endDebateToReview()">End Debate</button></div>
     </div>
     <div class="avs">
-      <div id="canvasAvatarWrap" style="width:100%;max-width:400px;height:320px;margin:0 auto 8px;position:relative;border-radius:20px;overflow:hidden;border:2px solid #1e293b;background:linear-gradient(180deg,#0d1f3c,#0a1628)">
-        <canvas id="avatarCanvas" width="400" height="320" style="width:100%;height:100%"></canvas>
-        <div id="avatarStatusBadge" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:4px 16px;border-radius:12px;background:rgba(10,15,26,.8);backdrop-filter:blur(8px);border:1px solid #1e293b;font-size:.75rem;color:#94a3b8;font-family:Outfit,sans-serif"></div>
+      <div class="orb-wrap" id="bavW">
+        <div class="orb-dots"></div>
+        <div class="orb-ring2"></div>
+        <div class="orb-ring"></div>
+        <div class="orb"></div>
       </div>
+      <div class="sw" id="sW"><div class="b" style="height:8px"></div><div class="b" style="height:14px"></div><div class="b" style="height:20px"></div><div class="b" style="height:14px"></div><div class="b" style="height:24px"></div><div class="b" style="height:14px"></div><div class="b" style="height:8px"></div></div>
+      <div class="on2" id="oN">AI Opponent</div>
+      <div class="os" id="oS">Preparing...</div>
+      <div class="sb" id="sB"></div>
     </div>
-  </div>
-</div>
 
 
 <!-- REVIEW -->
