@@ -876,10 +876,10 @@ async function showPractice(){
   var pc=document.getElementById('practiceContent');
   pc.innerHTML='<div style="text-align:center;padding:40px"><div class="loading" style="width:30px;height:30px;border-width:3px"></div><p style="margin-top:12px;color:#94a3b8">AI is preparing your practice points...</p></div>';
   try{
-    var res=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',text:'Give me 8-10 key debate points for the topic: "'+topic+'". My standpoint is: '+stand+'. Difficulty level: '+diff+'. Format: numbered list with brief explanation for each point. Include counter-arguments I should prepare for.'}],topic:topic,difficulty:diff,opponent:S.opponent,standpoint:stand})});
+    var res=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',text:'Give me 5 to 10 key debate points for the topic: "'+topic+'". My standpoint is: '+stand+'. Difficulty level: '+diff+'. IMPORTANT FORMAT: Return ONLY in this exact HTML format for each point: <div style="margin-bottom:20px"><h3 style="color:#60a5fa;font-size:1.05rem;margin-bottom:6px">Point Title Here</h3><p style="color:#cbd5e1;line-height:1.7">Detailed explanation of this point in 2-3 sentences. Include facts, examples, or counter-arguments.</p></div> Give minimum 5 and maximum 10 points. Do NOT use numbered lists or bullet points. Use only the HTML div format above.'}],topic:topic,difficulty:diff,opponent:S.opponent,standpoint:stand})});
     var data=await res.json();
     if(data.reply){
-      var points=data.reply.replace(/\n/g,'<br>');
+      var points=data.reply;
       pc.innerHTML='<div style="background:#0a0f1a;border:1px solid #1e293b;border-radius:16px;padding:24px;margin-bottom:20px"><h3 style="color:#a855f7;margin-bottom:6px">Topic: '+topic+'</h3><p style="color:#94a3b8;font-size:.85rem;margin-bottom:16px">Standpoint: <span style="color:#3b82f6;font-weight:600">'+stand.charAt(0).toUpperCase()+stand.slice(1)+'</span> | Difficulty: <span style="color:#22c55e;font-weight:600">'+diff.charAt(0).toUpperCase()+diff.slice(1)+'</span></p><div style="color:#f1f5f9;line-height:1.8;font-size:.95rem">'+points+'</div></div>';
     }else{
       pc.innerHTML='<p style="color:#ef4444;text-align:center">Could not generate practice points. Try again.</p>';
