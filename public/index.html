@@ -1061,15 +1061,26 @@ function toggleMic(){
     }
    }
 function autoStartMic(){
-    if(!S.recognition)S.recognition=initSTT();
-    if(!S.recognition||S.rec)return;
-    try{
-      sttFinalText='';
-      document.getElementById('cI').value='';
-      S.rec=true;
-      document.getElementById('mB').classList.add('rec');
-      S.recognition.start();
-    }catch(e){}
+    if(!S.active)return;
+    if(S.rec&&S.recognition){try{S.recognition.stop();}catch(e){}}
+    S.rec=false;
+    S.recognition=null;
+    setTimeout(function(){
+      if(!S.active)return;
+      S.recognition=initSTT();
+      if(!S.recognition)return;
+      try{
+        document.getElementById('cI').value='';
+        S.rec=true;
+        document.getElementById('mB').classList.add('rec');
+        S.recognition.start();
+        console.log('Mic auto-started');
+      }catch(e){
+        console.log('autoStartMic error:'+e.message);
+        S.rec=false;
+        document.getElementById('mB').classList.remove('rec');
+      }
+    },800);
   }
 
 // Debate
