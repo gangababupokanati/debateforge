@@ -537,7 +537,7 @@ body.light .orb-ring{border-color:rgba(37,99,235,.2)}
         <div class="oc opc" data-v="american" onclick="pk(this,'accent')"><div class="opi" style="background:rgba(239,68,68,.1);padding:6px"><img src="https://flagcdn.com/w40/us.png" style="width:30px;height:auto;border-radius:3px"></div><div><h4>American</h4><p>Zira &amp; David</p></div></div>
       </div>
     </div>
-    <div class="lnch"><button class="bt ba" onclick="startDebate()" style="width:auto;max-width:320px;padding:14px 44px">&#9876;&#65039; Enter the Arena</button></div>
+    <div class="lnch" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap"><button class="bt ba" onclick="startDebate()" style="width:auto;max-width:320px;padding:14px 44px">&#9876;&#65039; Enter the Arena</button><button class="bt" onclick="showPractice()" style="width:auto;max-width:320px;padding:14px 44px;background:#a855f7;color:#fff;border-radius:14px">&#128214; Practice</button></div>
   </div>
 </div>
 
@@ -868,6 +868,27 @@ function go(p){
 function cD(){document.getElementById('pD').classList.remove('op')}
 document.addEventListener('click',e=>{if(!e.target.closest('.ne'))cD()});
 
+async function showPractice(){
+  var topic=S.customTopic||S.subTopic||cap(S.topic);
+  var stand=S.standpoint||'support';
+  var diff=S.difficulty||'easy';
+  go('practice');
+  var pc=document.getElementById('practiceContent');
+  pc.innerHTML='<div style="text-align:center;padding:40px"><div class="loading" style="width:30px;height:30px;border-width:3px"></div><p style="margin-top:12px;color:#94a3b8">AI is preparing your practice points...</p></div>';
+  try{
+    var res=await fetch('/api/debate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',text:'Give me 8-10 key debate points for the topic: "'+topic+'". My standpoint is: '+stand+'. Difficulty level: '+diff+'. Format: numbered list with brief explanation for each point. Include counter-arguments I should prepare for.'}],topic:topic,difficulty:diff,opponent:S.opponent,standpoint:stand})});
+    var data=await res.json();
+    if(data.reply){
+      var points=data.reply.replace(/\n/g,'<br>');
+      pc.innerHTML='<div style="background:#0a0f1a;border:1px solid #1e293b;border-radius:16px;padding:24px;margin-bottom:20px"><h3 style="color:#a855f7;margin-bottom:6px">Topic: '+topic+'</h3><p style="color:#94a3b8;font-size:.85rem;margin-bottom:16px">Standpoint: <span style="color:#3b82f6;font-weight:600">'+stand.charAt(0).toUpperCase()+stand.slice(1)+'</span> | Difficulty: <span style="color:#22c55e;font-weight:600">'+diff.charAt(0).toUpperCase()+diff.slice(1)+'</span></p><div style="color:#f1f5f9;line-height:1.8;font-size:.95rem">'+points+'</div></div>';
+    }else{
+      pc.innerHTML='<p style="color:#ef4444;text-align:center">Could not generate practice points. Try again.</p>';
+    }
+  }catch(e){
+    pc.innerHTML='<p style="color:#ef4444;text-align:center">Network error. Please try again.</p>';
+  }
+}
+
 // Custom topic
 function addCustomTopic(){const v=document.getElementById('customTopic').value.trim();if(!v)return;S.customTopic=v;S.topic='custom';document.querySelectorAll('.og.c4 .oc').forEach(x=>x.classList.remove('sel'));document.getElementById('customTopicTag').innerHTML='<div class="mt-tag">\uD83C\uDFAF '+v+' <button onclick="removeCustomTopic()">\u00D7</button></div>';document.getElementById('customTopic').value=''}
 function removeCustomTopic(){S.customTopic='';S.topic='technology';document.getElementById('customTopicTag').innerHTML='';document.querySelector('.og.c4 .oc[data-v=technology]').classList.add('sel')}
@@ -1174,7 +1195,16 @@ html+='<div class="fc fg"><div class="fi">#'+(i+1)+'</div><p><b>'+(d.topic||'--'
 list.innerHTML=html;
 }catch(e){document.getElementById('histList').innerHTML='<p style="color:var(--t3);text-align:center">Could not load history.</p>'}}
 </script>
-
+<!-- PRACTICE PAGE -->
+<div class="pg" id="pg-practice" style="display:none;padding-top:56px;min-height:100vh">
+  <div style="max-width:780px;margin:0 auto;padding:36px 20px 56px">
+    <button onclick="go('home')" style="background:none;border:none;color:#60a5fa;font-size:.9rem;cursor:pointer;font-family:Outfit,sans-serif;margin-bottom:14px;padding:0">&#8592; Back to Home</button>
+    <h1 style="font-size:1.8rem;margin-bottom:8px;background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Practice Mode</h1>
+    <p style="color:#94a3b8;margin-bottom:24px">Key points to prepare for your debate</p>
+    <div id="practiceContent" style="color:#f1f5f9"><div style="text-align:center;padding:40px"><div class="loading" style="width:30px;height:30px;border-width:3px"></div><p style="margin-top:12px;color:#94a3b8">AI is preparing your practice points...</p></div></div>
+    <div style="text-align:center;margin-top:30px"><button class="bt ba" onclick="startDebate()" style="width:auto;padding:14px 44px;border-radius:14px">&#9876;&#65039; Enter the Arena</button></div>
+  </div>
+</div>
 
 <!-- SETTINGS PAGE -->
 <div class="pg" id="pg-settings" style="display:none;padding-top:56px;min-height:100vh">
