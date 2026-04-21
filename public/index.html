@@ -869,8 +869,8 @@ function cD(){document.getElementById('pD').classList.remove('op')}
 document.addEventListener('click',e=>{if(!e.target.closest('.ne'))cD()});
 
 // Custom topic
-function addCustomTopic(){const v=document.getElementById('customTopic').value.trim();if(!v)return;S.customTopic=v;S.topic='custom';document.querySelectorAll('.og.c4 .oc').forEach(x=>{x.classList.remove('sel');x.style.opacity='0.4';x.style.pointerEvents='none';});document.getElementById('customTopicTag').innerHTML='<div class="mt-tag">\uD83C\uDFAF '+v+' <button onclick="removeCustomTopic()">\u00D7</button></div>';document.getElementById('customTopic').value=''}
-function removeCustomTopic(){S.customTopic='';S.topic='technology';document.getElementById('customTopicTag').innerHTML='';document.querySelectorAll('.og.c4 .oc').forEach(x=>{x.style.opacity='1';x.style.pointerEvents='auto';});document.querySelector('.og.c4 .oc[data-v=technology]').classList.add('sel');
+function addCustomTopic(){const v=document.getElementById('customTopic').value.trim();if(!v)return;S.customTopic=v;S.topic='custom';document.querySelectorAll('.og.c4 .oc').forEach(x=>x.classList.remove('sel'));document.getElementById('customTopicTag').innerHTML='<div class="mt-tag">\uD83C\uDFAF '+v+' <button onclick="removeCustomTopic()">\u00D7</button></div>';document.getElementById('customTopic').value=''}
+function removeCustomTopic(){S.customTopic='';S.topic='technology';document.getElementById('customTopicTag').innerHTML='';document.querySelector('.og.c4 .oc[data-v=technology]').classList.add('sel')}
 
 // Auth
 // Auth
