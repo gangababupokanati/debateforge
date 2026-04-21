@@ -557,7 +557,7 @@ body.light .orb-ring{border-color:rgba(37,99,235,.2)}
 </div>
 <div class="debate-listening-indicator" id="debateIndicator" style="display:none"><span class="pulse-dot"></span><span id="debateStatusText">Listening...</span></div>
 <div class="debate-ai-status" id="debateAiStatus" style="display:none">AI is preparing...</div>
-<button class="debate-submit-btn" id="debateSubmitBtn" style="display:none" onclick="endDebateToReview()">Submit &#10148;</button>
+<button class="debate-submit-btn" id="debateSubmitBtn" style="display:none!important" style="display:none" onclick="endDebateToReview()">Submit &#10148;</button>
 <script>
 // Abstract Blob Sphere Animation
 (function(){
@@ -772,8 +772,8 @@ async function generateReport(){
       <div class="bds">
         <div class="bdg"><span class="dt"></span> Live</div>
         <div class="bdg" id="bT">&#128187; Tech</div>
-        <div class="bdg" id="bD">&#128994; Easy</div>
-        <div class="bdg" id="bO">&#9878; Analyst</div>
+        <div class="bdg" id="bD" style="display:none">&#128994; Easy</div>
+        <div class="bdg" id="bO" style="display:none">&#9878; Analyst</div>
       </div>
       <div class="dc"><span class="tm" id="tmr">00:00</span><button class="bt br bs" onclick="endDebateToReview()">End Debate</button></div>
     </div>
