@@ -990,7 +990,7 @@ function initSTT(){
   r.continuous=true;
   r.interimResults=true;
   r.lang='en-US';
-  var finalText='';
+  var finalText='';var restartCount=0;
   r.onresult=function(e){
     var interim='';
     finalText='';
@@ -1020,7 +1020,9 @@ function initSTT(){
   r.onend=function(){
     if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null}
     if(S.active&&S.rec){
-      try{finalText='';r.start();console.log('STT restarted');}catch(e){S.rec=false;document.getElementById('mB').classList.remove('rec');finalText='';}
+      restartCount++;
+      if(restartCount>50){S.rec=false;S.recognition=null;document.getElementById('mB').classList.remove('rec');setTimeout(function(){if(S.active)autoStartMic();},1000);restartCount=0;return;}
+      try{finalText='';r.start();}catch(e){S.rec=false;S.recognition=null;document.getElementById('mB').classList.remove('rec');setTimeout(function(){if(S.active)autoStartMic();},1000);}
     }else{
       S.rec=false;
       document.getElementById('mB').classList.remove('rec');
