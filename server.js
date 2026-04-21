@@ -180,9 +180,10 @@ const topicOpenings = {
 
 app.post('/api/debate', async (req, res) => {
   try {
-    const { messages, topic, difficulty, opponent } = req.body;
+    const { messages, topic, difficulty, opponent, standpoint } = req.body;
 
-    const systemPrompt = opponentPrompts[opponent]?.[difficulty] || opponentPrompts.analyst.medium;
+    const standpointInstruction = standpoint === 'oppose' ? 'The user OPPOSES this topic. You must SUPPORT and argue FOR the topic.' : standpoint === 'neutral' ? 'The user is NEUTRAL. You must also take a balanced, neutral position.' : 'The user SUPPORTS this topic. You must OPPOSE and argue AGAINST the topic.';
+    const systemPrompt = (opponentPrompts[opponent]?.[difficulty] || opponentPrompts.analyst.medium) + ' ' + standpointInstruction;
     const topicContext = topicOpenings[topic] || 'The debate topic is: ' + topic + '. Take the opposing position to the student.';
 
     const response = await openai.chat.completions.create({
