@@ -1018,12 +1018,20 @@ function initSTT(){
     },3000);
   };
   r.onend=function(){
-    S.rec=false;
-    document.getElementById('mB').classList.remove('rec');
     if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null}
-    finalText='';
+    if(S.active&&S.rec){
+      try{finalText='';r.start();console.log('STT restarted');}catch(e){S.rec=false;document.getElementById('mB').classList.remove('rec');finalText='';}
+    }else{
+      S.rec=false;
+      document.getElementById('mB').classList.remove('rec');
+      finalText='';
+    }
   };
-  r.onerror=function(){
+  r.onerror=function(e){
+    console.log('STT error:'+e.error);
+    if(e.error==='no-speech'||e.error==='aborted'){
+      return;
+    }
     S.rec=false;
     document.getElementById('mB').classList.remove('rec');
     if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null}
@@ -1115,7 +1123,7 @@ document.getElementById('pB').textContent=data.name[0].toUpperCase();
 document.getElementById('dn').textContent=data.name;
 document.getElementById('profileErr').style.display='none';
 var ok=document.getElementById('profileOk');ok.textContent='Profile updated!';ok.style.display='block';
-setTimeout(function(){ok.style.display='none'},3000);
+setTimeout(function(){ok.style.display='none'},4000);
 }catch(e){var er=document.getElementById('profileErr');er.textContent='Network error.';er.style.display='block'}}
 
 async function changePassword(){
