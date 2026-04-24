@@ -1,109 +1,78 @@
-// fix_report.js - Remove canvas avatar and restore orb
+// fix_report.js - Comprehensive bug fix for DebateForge
 // Run: node fix_report.js
 
 const fs = require('fs');
 let html = fs.readFileSync('public/index.html', 'utf8');
 let fixes = 0;
 
-// ============ FIX 1: Replace canvas avatar with orb ============
-const canvasAvatar = `<div id="canvasAvatarWrap" style="width:100%;max-width:400px;height:320px;margin:0 auto 8px;position:relative;border-radius:20px;overflow:hidden;border:2px solid #1e293b;background:linear-gradient(180deg,#0d1f3c,#0a1628)">
-        <canvas id="avatarCanvas" width="400" height="320" style="width:100%;height:100%"></canvas>
-        <div id="avatarStatusBadge" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);padding:4px 16px;border-radius:12px;background:rgba(10,15,26,.8);backdrop-filter:blur(8px);border:1px solid #1e293b;font-size:.75rem;color:#94a3b8;font-family:Outfit,sans-serif"></div>
-      </div>`;
-
-const orbHTML = `<div class="orb-wrap" id="bavW">
-        <div class="orb-dots"></div>
-        <div class="orb-ring2"></div>
-        <div class="orb-ring"></div>
-        <div class="orb"></div>
-      </div>
-      <div class="sw" id="sW"><div class="b" style="height:8px"></div><div class="b" style="height:14px"></div><div class="b" style="height:20px"></div><div class="b" style="height:14px"></div><div class="b" style="height:24px"></div><div class="b" style="height:14px"></div><div class="b" style="height:8px"></div></div>
-      <div class="on2" id="oN">AI Opponent</div>
-      <div class="os" id="oS">Preparing...</div>
-      <div class="sb" id="sB"></div>`;
-
-if (html.includes('canvasAvatarWrap')) {
-  html = html.replace(canvasAvatar, orbHTML);
+// ============ FIX 1: Fix broken bD badge HTML ============
+if (html.includes('id="bD" style="display:none"> style="display:none">')) {
+  html = html.replace('id="bD" style="display:none"> style="display:none">', 'id="bD" style="display:none">');
   fixes++;
-  console.log('✅ FIX 1: Replaced canvas avatar with orb');
-} else {
-  console.log('⏭️  FIX 1: Canvas avatar not found');
+  console.log('FIX 1: Fixed broken bD badge');
 }
 
-// ============ FIX 2: Remove the entire Canvas avatar JS block ============
-const canvasJSRegex = /<script>\s*\/\/ ========== CANVAS AVATAR WITH LIP SYNC ==========[\s\S]*?<\/script>/;
-if (canvasJSRegex.test(html)) {
-  html = html.replace(canvasJSRegex, '');
+// ============ FIX 2: Fix broken bO badge HTML ============
+if (html.includes('id="bO" style="display:none"> style="display:none">')) {
+  html = html.replace('id="bO" style="display:none"> style="display:none">', 'id="bO" style="display:none">');
   fixes++;
-  console.log('✅ FIX 2: Removed Canvas avatar JavaScript');
-} else {
-  console.log('⏭️  FIX 2: Canvas avatar JS not found');
+  console.log('FIX 2: Fixed broken bO badge');
 }
 
-// ============ FIX 3: Remove avatar CSS if present ============
-if (html.includes('/* HUMAN AI AVATAR */')) {
-  html = html.replace(/\/\* HUMAN AI AVATAR \*\/[\s\S]*?@keyframes glowPulse\{[^}]*\{[^}]*\}[^}]*\}/, '');
-  fixes++;
-  console.log('✅ FIX 3: Removed avatar CSS');
+// ============ FIX 4: Fix review page nesting ============
+// pg-review is inside pg-debate > .df div. Need to close those before review.
+var reviewIdx = html.indexOf('<!-- REVIEW -->');
+if (reviewIdx > -1) {
+  var debateStart = html.indexOf('<div class="pg" id="pg-debate">');
+  if (debateStart > -1) {
+    var section = html.substring(debateStart, reviewIdx);
+    var opens = (section.match(/<div[\s>]/g) || []).length;
+    var closes = (section.match(/<\/div>/g) || []).length;
+    var missing = opens - closes;
+    if (missing > 0) {
+      var before = html.substring(0, reviewIdx).trimEnd();
+      var after = html.substring(reviewIdx);
+      var addDivs = '';
+      for (var i = 0; i < missing; i++) addDivs += '\n</div>';
+      html = before + addDivs + '\n\n' + after;
+      fixes++;
+      console.log('FIX 4: Added ' + missing + ' missing </div> before REVIEW (fixes nesting)');
+    } else {
+      console.log('SKIP 4: Div count balanced');
+    }
+  }
 }
 
-// ============ FIX 4: Fix avs display back to normal ============
-if (html.includes('class="avs" style="display:flex;z-index:10;position:relative"')) {
-  html = html.replace('class="avs" style="display:flex;z-index:10;position:relative"', 'class="avs"');
-  fixes++;
-  console.log('✅ FIX 4: Reset avs display');
+// ============ FIX 5: Add End Debate button to debate bar ============
+if (!html.includes('End Debate</button></div>\n    </div>') && !html.includes('End Debate</button>')) {
+  var timerSpan = '<div class="dc"><span class="tm" id="tmr">00:00</span></div>';
+  var timerWithBtn = '<div class="dc"><span class="tm" id="tmr">00:00</span><button class="bt br bs" onclick="endDebateToReview()" style="margin-left:12px">End Debate</button></div>';
+  if (html.includes(timerSpan)) {
+    html = html.replace(timerSpan, timerWithBtn);
+    fixes++;
+    console.log('FIX 5: Added End Debate button to debate bar');
+  }
 }
 
-// ============ FIX 5: Restore sB and oS references that had null checks ============
-// Fix getAIResponse sB null check back to normal
-if (html.includes('var sBel=document.getElementById(\'sB\');if(sBel)sBel.innerHTML=\'<div class="tp">')) {
+// ============ FIX 6: Increase silence timer to 4000ms ============
+if (html.includes('},3000)') && html.includes('silenceTimer')) {
+  html = html.replace('},3000)', '},4000)');
+  fixes++;
+  console.log('FIX 6: Silence timer increased to 4000ms');
+}
+
+// ============ FIX 7: Ensure review page has width:100% and color ============
+if (html.includes('id="pg-review"') && !html.includes('pg-review" style="display:none;padding-top:56px;min-height:100vh;width:100%;color:#f1f5f9"')) {
   html = html.replace(
-    'var sBel=document.getElementById(\'sB\');if(sBel)sBel.innerHTML=\'<div class="tp"><i></i><i></i><i></i></div>\';',
-    'document.getElementById(\'sB\').innerHTML=\'<div class="tp"><i></i><i></i><i></i></div>\';'
+    /id="pg-review" style="[^"]*"/,
+    'id="pg-review" style="display:none;padding-top:56px;min-height:100vh;width:100%;color:#f1f5f9"'
   );
   fixes++;
-  console.log('✅ FIX 5a: Restored sB innerHTML');
-}
-
-if (html.includes('var oSel2=document.getElementById(\'oS\');if(oSel2)oSel2.textContent=\'Thinking')) {
-  html = html.replace(
-    'var oSel2=document.getElementById(\'oS\');if(oSel2)oSel2.textContent=\'Thinking\\u2026\';',
-    'document.getElementById(\'oS\').textContent=\'Thinking\\u2026\';'
-  );
-  fixes++;
-  console.log('✅ FIX 5b: Restored oS textContent');
-}
-
-if (html.includes('var sBel4=document.getElementById(\'sB\');if(sBel4)sBel4.textContent=text;')) {
-  html = html.replace(
-    'var sBel4=document.getElementById(\'sB\');if(sBel4)sBel4.textContent=text;',
-    'document.getElementById(\'sB\').textContent=text;'
-  );
-  fixes++;
-  console.log('✅ FIX 5c: Restored sB textContent');
-}
-
-if (html.includes('var sBel3=document.getElementById(\'sB\');if(sBel3)sBel3.textContent=\'Network error.\';var oSel3=document.getElementById(\'oS\');if(oSel3)oSel3.textContent=\'Error\'')) {
-  html = html.replace(
-    'var sBel3=document.getElementById(\'sB\');if(sBel3)sBel3.textContent=\'Network error.\';var oSel3=document.getElementById(\'oS\');if(oSel3)oSel3.textContent=\'Error\'',
-    'document.getElementById(\'sB\').textContent=\'Network error.\';document.getElementById(\'oS\').textContent=\'Error\''
-  );
-  fixes++;
-  console.log('✅ FIX 5d: Restored catch block');
-}
-
-// ============ FIX 6: Keep tL null check (it's still needed) ============
-// tL null check stays because it's harmless
-
-// ============ FIX 7: Restore particle bg opacity ============
-if (html.includes('style="display:none;opacity:0.3"') || html.includes('style="display:none;opacity:0.2"')) {
-  html = html.replace(/style="display:none;opacity:0\.\d+"/, 'style="display:none"');
-  fixes++;
-  console.log('✅ FIX 7: Restored particle bg opacity');
+  console.log('FIX 7: Review page styling fixed');
 }
 
 fs.writeFileSync('public/index.html', html, 'utf8');
-console.log('\n🎉 Done! ' + fixes + ' fixes applied.');
-console.log('Avatar removed, orb restored!');
-console.log('\nRun: node server.js');
-console.log('Push: git add . && git commit -m "Remove avatar, restore orb" && git push origin main');
+console.log('\nDone! ' + fixes + ' fixes applied.');
+console.log('\nNext:');
+console.log('  node server.js');
+console.log('  git add . && git commit -m "Fix all bugs" && git push origin main');

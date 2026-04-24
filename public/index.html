@@ -772,10 +772,10 @@ async function generateReport(){
       <div class="bds">
         <div class="bdg"><span class="dt"></span> Live</div>
         <div class="bdg" id="bT">&#128187; Tech</div>
-        <div class="bdg" id="bD" style="display:none"> style="display:none">&#128994; Easy</div>
-        <div class="bdg" id="bO" style="display:none"> style="display:none">&#9878; Analyst</div>
+        <div class="bdg" id="bD" style="display:none">&#128994; Easy</div>
+        <div class="bdg" id="bO" style="display:none">&#9878; Analyst</div>
       </div>
-      <div class="dc"><span class="tm" id="tmr">00:00</span></div>
+      <div class="dc"><span class="tm" id="tmr">00:00</span><button class="bt br bs" onclick="endDebateToReview()" style="margin-left:12px">End Debate</button></div>
     </div>
     <div class="avs">
       <div class="orb-wrap" id="bavW" style="display:none">
@@ -1036,7 +1036,7 @@ function initSTT(){
           setTimeout(function(){sendMsg()},300);
         }
       }
-    },3000);
+    },4000);
   };
   r.onend=function(){
     if(silenceTimer){clearTimeout(silenceTimer);silenceTimer=null}
@@ -1174,7 +1174,7 @@ var data=await res.json();
 if(!res.ok){errEl.textContent=data.error;errEl.style.display='block';return}
 document.getElementById('sCurPw').value='';document.getElementById('sNewPw').value='';document.getElementById('sConfPw').value='';
 var ok=document.getElementById('pwOk');ok.textContent='Password changed!';ok.style.display='block';
-setTimeout(function(){ok.style.display='none'},3000);
+setTimeout(function(){ok.style.display='none'},4000);
 }catch(e){errEl.textContent='Network error.';errEl.style.display='block'}}
 
 async function loadHistory(){
