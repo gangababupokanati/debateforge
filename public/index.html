@@ -839,7 +839,8 @@ function getAv(){return {id:"default",name:"AI Opponent",img:""}}
 function go(p){
     document.querySelectorAll('.pg').forEach(x=>{x.classList.remove('on');x.style.display='none'});
     var el=document.getElementById('pg-'+p);
-    if(el){el.classList.add('on');el.style.display=(p==='login'||p==='register')?'flex':'block';}
+    if(el){el.classList.add('on');el.style.display=(p==='login'||p==='register'||p==='forgot')?'flex':'block';}
+    document.getElementById('navbar').style.display=(p==='landing'||p==='login'||p==='register'||p==='forgot')?'none':'flex';
     document.querySelectorAll('.nt').forEach(x=>x.classList.remove('on'));
     var t=document.getElementById('t-'+p);
     if(t)t.classList.add('on');
