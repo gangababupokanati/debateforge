@@ -931,7 +931,7 @@ document.getElementById('navbar').style.display='flex';go('home');
 }catch(e){showRegErr('Network error. Please try again.')}}
 
 function logout(){S.user=null;S.token=null;localStorage.removeItem('df_token');localStorage.removeItem('df_user');document.getElementById('navbar').style.display='none';go('landing')}
-(function(){var t=localStorage.getItem('df_token'),u=localStorage.getItem('df_user');if(t&&u){S.token=t;S.user=JSON.parse(u);document.getElementById('pB').textContent=S.user.name[0].toUpperCase();document.getElementById('dn').textContent=S.user.name;document.getElementById('de').textContent=S.user.email;document.getElementById('navbar').style.display='flex';go('loading')}})();
+(function(){var t=localStorage.getItem('df_token'),u=localStorage.getItem('df_user');if(t&&u){S.token=t;S.user=JSON.parse(u);document.getElementById('pB').textContent=S.user.name[0].toUpperCase();document.getElementById('dn').textContent=S.user.name;document.getElementById('de').textContent=S.user.email;go('landing')}})();
 
 
 
