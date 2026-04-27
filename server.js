@@ -188,7 +188,7 @@ app.post('/api/debate', async (req, res) => {
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [
         { role: 'system', content: systemPrompt + ' ' + topicContext },
         ...messages.map(m => ({
