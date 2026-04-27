@@ -1273,7 +1273,7 @@ list.innerHTML=html;
   }
   var origGo = window.go;
   window.go = function(p){
-    origGo(p);if(p!=="debate"){hideDebateOverlay();}
+    origGo(p);document.getElementById('navbar').style.display=(p==='landing'||p==='login'||p==='register'||p==='forgot')?'none':'flex';if(p!=="debate"){hideDebateOverlay();}
     var title = document.getElementById('navTitle');
     var bn = document.getElementById('bottomNav');
     if(title){
